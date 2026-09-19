@@ -14,6 +14,10 @@ def validar_producto(form):
     codigo = form.get("codigo", "").strip()
     if not codigo or len(codigo) > 120:
         return "El codigo es obligatorio y debe tener como maximo 120 caracteres."
+    if len(form.get("nombre", "")) > 120:
+        return "El nombre debe tener como maximo 120 caracteres."
+    if len(form.get("categoria", "")) > 50:
+        return "La categoria debe tener como maximo 50 caracteres."
     return None
 
 @app.route("/")
@@ -61,9 +65,9 @@ def nuevo():
         # form
         data = (
             request.form["codigo"].strip(),
-            str(request.form["nombre"]),
+            request.form.get("nombre", ""),
             float(request.form["precio"]) or 0,
-            str(request.form["categoria"]),
+            request.form.get("categoria", ""),
             existencia,
             bool(request.form["activo"])
 
@@ -115,9 +119,9 @@ def editar(id):
         # form
         data = (
             request.form["codigo"].strip(),
-            str(request.form["nombre"]),
+            request.form.get("nombre", ""),
             float(request.form.get("precio") or 0),
-            str(request.form["categoria"]),
+            request.form.get("categoria", ""),
             existencia,
             "activo" in request.form,
             id
