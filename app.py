@@ -32,6 +32,10 @@ def index():
 @app.route("/producto", methods=["GET", "POST"])
 def nuevo():
     if request.method == "POST":
+        existencia = int(request.form.get("existencia") or 0)
+        if existencia < 0:
+            flash("La existencia no puede ser negativa.", "danger")
+            return redirect(url_for("nuevo"))
         data = ()
         # codigo = request.form["codigo"]
         # nombre = request.form["nombre"]
@@ -46,7 +50,7 @@ def nuevo():
             str(request.form["nombre"]),
             float(request.form["precio"]) or 0,
             str(request.form["categoria"]),
-            int(request.form["existencia"]) or 0,
+            existencia,
             bool(request.form["activo"])
 
         )
@@ -73,13 +77,18 @@ def editar(id):
         cur.close(); conn.close()
         abort(404)
     if request.method == "POST":
+        existencia = int(request.form.get("existencia") or 0)
+        if existencia < 0:
+            cur.close(); conn.close()
+            flash("La existencia no puede ser negativa.", "danger")
+            return redirect(url_for("editar", id=id))
         # form
         data = (
             str(request.form["codigo"]),
             str(request.form["nombre"]),
             float(request.form.get("precio") or 0),
             str(request.form["categoria"]),
-            int(request.form.get("existencia") or 0),
+            existencia,
             "activo" in request.form,
             id
         )

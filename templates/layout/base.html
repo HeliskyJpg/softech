@@ -31,8 +31,8 @@
             </div>
         </div>
     </nav>
-    {% for mensaje in get_flashed_messages() %}
-    <div class="alert alert-success" role="status">{{ mensaje }}</div>
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+    <div class="alert alert-{{ 'danger' if categoria == 'danger' else 'success' }}" role="status">{{ mensaje }}</div>
     {% endfor %}
     {% block content %}
     <!-- redireccion a Listado -->
