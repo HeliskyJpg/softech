@@ -23,6 +23,11 @@ def validar_producto(form):
     precio = form.get("precio", "").strip() or "0"
     if not re.fullmatch(r"[0-9]{1,10}(\.[0-9]{1,2})?", precio):
         return "El precio debe estar entre 0 y 9999999999.99, con hasta dos decimales."
+    existencia = form.get("existencia", "").strip()
+    if not re.fullmatch(r"[0-9]{1,10}", existencia):
+        return "La existencia debe ser un numero entero entre 1 y 2147483647."
+    if not 1 <= int(existencia) <= 2147483647:
+        return "La existencia debe estar entre 1 y 2147483647."
     return None
 
 @app.route("/")
@@ -52,13 +57,7 @@ def nuevo():
         if error:
             flash(error, "danger")
             return redirect(url_for("nuevo"))
-        try:
-            existencia = int(request.form.get("existencia") or 0)
-        except ValueError:
-            existencia = 0
-        if existencia < 1:
-            flash("La cantidad debe ser un entero mayor o igual a 1.", "danger")
-            return redirect(url_for("nuevo"))
+        existencia = int(request.form["existencia"])
         data = ()
         # codigo = request.form["codigo"]
         # nombre = request.form["nombre"]
@@ -113,14 +112,7 @@ def editar(id):
             cur.close(); conn.close()
             flash(error, "danger")
             return redirect(url_for("editar", id=id))
-        try:
-            existencia = int(request.form.get("existencia") or 0)
-        except ValueError:
-            existencia = 0
-        if existencia < 1:
-            cur.close(); conn.close()
-            flash("La cantidad debe ser un entero mayor o igual a 1.", "danger")
-            return redirect(url_for("editar", id=id))
+        existencia = int(request.form["existencia"])
         # form
         data = (
             request.form["codigo"].strip(),
