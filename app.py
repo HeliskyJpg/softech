@@ -32,9 +32,12 @@ def index():
 @app.route("/producto", methods=["GET", "POST"])
 def nuevo():
     if request.method == "POST":
-        existencia = int(request.form.get("existencia") or 0)
-        if existencia < 0:
-            flash("La existencia no puede ser negativa.", "danger")
+        try:
+            existencia = int(request.form.get("existencia") or 0)
+        except ValueError:
+            existencia = 0
+        if existencia < 1:
+            flash("La cantidad debe ser un entero mayor o igual a 1.", "danger")
             return redirect(url_for("nuevo"))
         data = ()
         # codigo = request.form["codigo"]
@@ -77,10 +80,13 @@ def editar(id):
         cur.close(); conn.close()
         abort(404)
     if request.method == "POST":
-        existencia = int(request.form.get("existencia") or 0)
-        if existencia < 0:
+        try:
+            existencia = int(request.form.get("existencia") or 0)
+        except ValueError:
+            existencia = 0
+        if existencia < 1:
             cur.close(); conn.close()
-            flash("La existencia no puede ser negativa.", "danger")
+            flash("La cantidad debe ser un entero mayor o igual a 1.", "danger")
             return redirect(url_for("editar", id=id))
         # form
         data = (
