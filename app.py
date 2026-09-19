@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from db import get_connection
 import psycopg2.extras
 from dotenv import load_dotenv
@@ -20,7 +20,7 @@ def index():
 
 
 # nuevo producto 
-@app.route("/nuevo", methods=["GET", "POST"])
+@app.route("/producto", methods=["GET", "POST"])
 def nuevo():
     if request.method == "POST":
         data = ()
@@ -54,17 +54,34 @@ def nuevo():
     return render_template("form.html")
 
         
-# @app.route("/editar", methods=["GET", "POST"])
-# def editar():
-#     if request.method == "POST":
-#         # form
-#         data = (
-#             str(request.form["codigo"]),
-#             str(request.form["nombre"]),
-#             float(request.form["precio"]) or 0,
-#             str(request.form["categoria"]),
-#             int(request.form["existencia"]) or 0,
-#             bool(request.form["activo"])
+@app.route("/producto/editar/<int:id>", methods=["GET", "POST"])
+def editar(id):
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT * FROM productos WHERE id=%s", (id,))
+    producto = cur.fetchone()
+    if producto is None:
+        cur.close(); conn.close()
+        abort(404)
+    if request.method == "POST":
+        # form
+        data = (
+            str(request.form["codigo"]),
+            str(request.form["nombre"]),
+            float(request.form.get("precio") or 0),
+            str(request.form["categoria"]),
+            int(request.form.get("existencia") or 0),
+            "activo" in request.form,
+            id
+        )
+        cur.execute("""UPDATE productos SET codigo=%s, nombre=%s, precio=%s, categoria=%s, existencia=%s, activo=%s
+        WHERE id=%s""",data)
+        conn.commit(); cur.close(); conn.close()
+        flash("Producto editado exitosamente")
+        return redirect(url_for("index"))
+    cur.close(); conn.close()
+    return render_template("form.html", producto=producto)
+
 
 
 if __name__ == "__main__":
