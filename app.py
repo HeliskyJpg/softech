@@ -10,6 +10,12 @@ app = Flask(__name__)
 
 app.secret_key = user=os.getenv("SECRET_KEY")
 
+def validar_producto(form):
+    codigo = form.get("codigo", "").strip()
+    if not codigo or len(codigo) > 120:
+        return "El codigo es obligatorio y debe tener como maximo 120 caracteres."
+    return None
+
 @app.route("/")
 def index():
     q = request.args.get("q", "").strip()
@@ -33,6 +39,10 @@ def index():
 @app.route("/producto", methods=["GET", "POST"])
 def nuevo():
     if request.method == "POST":
+        error = validar_producto(request.form)
+        if error:
+            flash(error, "danger")
+            return redirect(url_for("nuevo"))
         try:
             existencia = int(request.form.get("existencia") or 0)
         except ValueError:
@@ -50,7 +60,7 @@ def nuevo():
         
         # form
         data = (
-            str(request.form["codigo"]),
+            request.form["codigo"].strip(),
             str(request.form["nombre"]),
             float(request.form["precio"]) or 0,
             str(request.form["categoria"]),
@@ -89,6 +99,11 @@ def editar(id):
         cur.close(); conn.close()
         abort(404)
     if request.method == "POST":
+        error = validar_producto(request.form)
+        if error:
+            cur.close(); conn.close()
+            flash(error, "danger")
+            return redirect(url_for("editar", id=id))
         try:
             existencia = int(request.form.get("existencia") or 0)
         except ValueError:
@@ -99,7 +114,7 @@ def editar(id):
             return redirect(url_for("editar", id=id))
         # form
         data = (
-            str(request.form["codigo"]),
+            request.form["codigo"].strip(),
             str(request.form["nombre"]),
             float(request.form.get("precio") or 0),
             str(request.form["categoria"]),
