@@ -36,10 +36,12 @@
         >
         <form
           method="post"
+          action="{{ url_for('eliminar', id=p.id) }}"
+          onsubmit="return confirm('¿Eliminar este producto?');"
         >
           <button
             class="btn btn-danger"
-     
+            type="submit">
             Eliminar
           </button>
         </form>

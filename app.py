@@ -84,5 +84,20 @@ def editar(id):
 
 
 
+@app.route("/producto/eliminar/<int:id>", methods=["POST"])
+def eliminar(id):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM productos WHERE id=%s RETURNING id", (id,))
+            if cur.fetchone() is None:
+                abort(404)
+        conn.commit()
+    finally:
+        conn.close()
+    flash("Producto eliminado exitosamente")
+    return redirect(url_for("index"))
+
+
 if __name__ == "__main__":
     app.run(debug=True)

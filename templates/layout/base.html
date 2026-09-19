@@ -31,6 +31,9 @@
             </div>
         </div>
     </nav>
+    {% for mensaje in get_flashed_messages() %}
+    <div class="alert alert-success" role="status">{{ mensaje }}</div>
+    {% endfor %}
     {% block content %}
     <!-- redireccion a Listado -->
     <a href="#" class="btn btn-primary">Ir a Listado</a>
