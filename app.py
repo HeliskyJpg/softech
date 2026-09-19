@@ -73,7 +73,7 @@ def nuevo():
             Decimal(request.form.get("precio", "").strip() or "0"),
             request.form.get("categoria", ""),
             existencia,
-            bool(request.form["activo"])
+            "activo" in request.form
 
         )
         print(data)
