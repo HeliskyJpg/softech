@@ -7,6 +7,15 @@
     >+ Nuevo producto</a
   >
 </div>
+<form method="get" action="{{ url_for('index') }}" class="d-flex flex-wrap gap-2 my-3" role="search">
+  <label class="visually-hidden" for="buscar">Buscar productos</label>
+  <input id="buscar" name="q" type="search" class="form-control w-auto flex-grow-1"
+         placeholder="Código, nombre o categoría" value="{{ q }}">
+  <button type="submit" class="btn btn-primary" aria-label="Buscar" title="Buscar">
+    <i class="bi bi-search" aria-hidden="true"></i>
+  </button>
+  {% if q %}<a class="btn btn-secondary" href="{{ url_for('index') }}">Limpiar</a>{% endif %}
+</form>
 <table class="tabla">
   <thead>
     <tr>
@@ -47,6 +56,8 @@
         </form>
       </td>
     </tr>
+    {% else %}
+    <tr><td colspan="7">{{ "No se encontraron productos." if q else "No hay productos registrados." }}</td></tr>
     {% endfor %}
   </tbody>
 </table>

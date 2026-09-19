@@ -11,12 +11,21 @@ app.secret_key = user=os.getenv("SECRET_KEY")
 
 @app.route("/")
 def index():
+    q = request.args.get("q", "").strip()
     conn = get_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute("SELECT * FROM productos ORDER BY id DESC")
+    if q:
+        patron = "%" + q.replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%"
+        cur.execute("""SELECT * FROM productos
+                    WHERE codigo ILIKE %s ESCAPE '!'
+                       OR nombre ILIKE %s ESCAPE '!'
+                       OR categoria ILIKE %s ESCAPE '!'
+                    ORDER BY id DESC""", (patron, patron, patron))
+    else:
+        cur.execute("SELECT * FROM productos ORDER BY id DESC")
     productos = cur.fetchall()
     cur.close(); conn.close()
-    return render_template("home.html", productos=productos)
+    return render_template("home.html", productos=productos, q=q)
 
 
 # nuevo producto 
