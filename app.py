@@ -1,4 +1,6 @@
 import os
+import re
+from decimal import Decimal
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from db import get_connection
 import psycopg2.extras
@@ -18,6 +20,9 @@ def validar_producto(form):
         return "El nombre debe tener como maximo 120 caracteres."
     if len(form.get("categoria", "")) > 50:
         return "La categoria debe tener como maximo 50 caracteres."
+    precio = form.get("precio", "").strip() or "0"
+    if not re.fullmatch(r"[0-9]{1,10}(\.[0-9]{1,2})?", precio):
+        return "El precio debe estar entre 0 y 9999999999.99, con hasta dos decimales."
     return None
 
 @app.route("/")
@@ -66,7 +71,7 @@ def nuevo():
         data = (
             request.form["codigo"].strip(),
             request.form.get("nombre", ""),
-            float(request.form["precio"]) or 0,
+            Decimal(request.form.get("precio", "").strip() or "0"),
             request.form.get("categoria", ""),
             existencia,
             bool(request.form["activo"])
@@ -120,7 +125,7 @@ def editar(id):
         data = (
             request.form["codigo"].strip(),
             request.form.get("nombre", ""),
-            float(request.form.get("precio") or 0),
+            Decimal(request.form.get("precio", "").strip() or "0"),
             request.form.get("categoria", ""),
             existencia,
             "activo" in request.form,
