@@ -1,0 +1,26 @@
+{% extends "layout/base.html" %}
+{% block content %}
+
+<h2>{{ "Editar producto" if producto else "Nuevo producto" }}</h2>
+<form method="post" class="formulario">
+<label for="codigo">Código</label>
+<input id="codigo" name="codigo" type="text" required value="{{ producto.codigo if producto else '' }}">
+<label for="nombre">Nombre</label>
+<input id="nombre" name="nombre" type="text" value="{{ producto.nombre if producto else '' }}">
+<label for="categoria">Categoría</label>
+<input id="categoria" name="categoria" type="text" value="{{ producto.categoria if producto else '' }}">
+<!-- almacena decimales -->
+<label for="precio">Precio</label>
+<input id="precio" name="precio" type="number"  step="0.01" min="0" value="{{ producto.precio if producto else '' }}">
+<label for="existencia">Existencia</label>
+<input id="existencia" name="existencia" type="number" min="0" value="{{ producto.existencia if producto else '' }}">
+<label class="chk">
+<input type="checkbox" name="activo" {{ "checked" if (not producto) or producto.activo else "" }}> Activo
+</label>
+<div class="form-acciones">
+<button class="btn btn-primary" type="submit">Guardar</button>
+<a class="btn" href="{{ url_for('index') }}">Cancelar</a>
+</div>
+</form>
+{% endblock %}
+
