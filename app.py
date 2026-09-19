@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from db import get_connection
 import psycopg2.extras
+from psycopg2.errors import UniqueViolation
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -60,11 +61,19 @@ def nuevo():
         print(data)
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("""INSERT INTO productos (codigo, nombre, precio, categoria, existencia, activo) 
-                    VALUES (%s, %s, %s, %s,%s,%s)""", data)
-        conn.commit()
-        cur.close()
-        conn.close()
+        try:
+            cur.execute("""INSERT INTO productos (codigo, nombre, precio, categoria, existencia, activo)
+                        VALUES (%s, %s, %s, %s,%s,%s)""", data)
+            conn.commit()
+        except UniqueViolation as error:
+            conn.rollback()
+            if error.diag.constraint_name != "productos_codigo_key":
+                raise
+            flash("Ya existe un producto con ese codigo.", "danger")
+            return redirect(url_for("nuevo"))
+        finally:
+            cur.close()
+            conn.close()
         flash("Producto registrado exitosamente")
         return redirect(url_for("index"))
     return render_template("form.html")
@@ -98,9 +107,19 @@ def editar(id):
             "activo" in request.form,
             id
         )
-        cur.execute("""UPDATE productos SET codigo=%s, nombre=%s, precio=%s, categoria=%s, existencia=%s, activo=%s
-        WHERE id=%s""",data)
-        conn.commit(); cur.close(); conn.close()
+        try:
+            cur.execute("""UPDATE productos SET codigo=%s, nombre=%s, precio=%s, categoria=%s, existencia=%s, activo=%s
+            WHERE id=%s""",data)
+            conn.commit()
+        except UniqueViolation as error:
+            conn.rollback()
+            if error.diag.constraint_name != "productos_codigo_key":
+                raise
+            flash("Ya existe un producto con ese codigo.", "danger")
+            return redirect(url_for("editar", id=id))
+        finally:
+            cur.close()
+            conn.close()
         flash("Producto editado exitosamente")
         return redirect(url_for("index"))
     cur.close(); conn.close()
